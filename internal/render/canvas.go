@@ -13,18 +13,18 @@ const (
 	dotsPerCellY = 4
 )
 
-type Canvas struct {
-	width, height int // in terminal character cells
-	dots          []bool // size (width * 2) x (height * 4)
-	colors        []colorful.Color // current colour for each cell
-}
-
 // using unicode braille pixel map for detail
 var pixelMap = [4][2]byte{
 	{0x01, 0x08},
 	{0x02, 0x10},
 	{0x04, 0x20},
 	{0x40, 0x80},
+}
+
+type Canvas struct {
+	width, height int // in terminal character cells
+	dots          []bool // size (width * 2) x (height * 4)
+	colors        []colorful.Color // current colour for each cell
 }
 
 func New(width, height int) *Canvas {
@@ -83,9 +83,9 @@ func (c *Canvas) Render() string {
 			if bits != 0 {
 				col := c.colors[cellY*c.width+cellX]
 				r, g, b := col.RGB255()
-				fmt.Fprintf(&output, "\033[38;2;%d;%d;%dm", r, g, b)
+				fmt.Fprintf(&output, "\033[38;2;%d;%d;%dm", r, g, b) // Foreground RGB escape sequence
 				output.WriteRune(rune(0x2800 + int(bits)))
-				output.WriteString("\033[38;2;0m")
+				output.WriteString("\033[38;2;0m") // Clear colour
 			} else {
 				output.WriteRune(' ')
 			}

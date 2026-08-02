@@ -13,8 +13,8 @@ func (c *Canvas) DrawCircle(centerX, centerY int, r int, col colorful.Color) {
 	deltas := [4][2]int { {1, 1}, {1, -1}, {-1, 1}, {-1, -1} }
 	for x >= y {
 		for _, d := range deltas {
-			a := d[0]*x+r
-			b := d[1]*y+r
+			a := d[0]*x
+			b := d[1]*y
 			c.SetDotWithColor(centerX+a, centerY+b, col)
 			c.SetDotWithColor(centerX+b, centerY+a, col)
 		}
