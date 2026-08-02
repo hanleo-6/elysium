@@ -6,10 +6,10 @@ import(
 )
 
 func main() {
-	c := render.New(50, 50)
+	c := render.New(25, 25)
 
-	c.SetDot(25, 25)
-	c.SetDot(10, 10)
+	c.DrawCircle(c.DotWidth()/3, c.DotHeight()/2, 3.0, render.ColorAdult)
+	c.DrawLine(0, 0, 5, 2, render.ColorDeepWater)
 
 	fmt.Print(c.Render())
 }
