@@ -1,9 +1,13 @@
 package render
 
 import(
+	"fmt"
 	"strings"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
+// Each terminal character cell is split into a 2 x 4 rectangle grid of dots
 const (
 	dotsPerCellX = 2
 	dotsPerCellY = 4
@@ -11,7 +15,8 @@ const (
 
 type Canvas struct {
 	width, height int // in terminal character cells
-	dots []bool // size (width * 2) x (height * 4)
+	dots          []bool // size (width * 2) x (height * 4)
+	colors        []colorful.Color // current colour for each cell
 }
 
 // using unicode braille pixel map for detail
@@ -27,12 +32,28 @@ func New(width, height int) *Canvas {
 		width:  width,
 		height: height,
 		dots:   make([]bool, width*dotsPerCellX*height*dotsPerCellY),
+		colors: make([]colorful.Color, width*height),
 	}
 }
 
-func (c *Canvas) SetDot(x, y int) {
-	if (x > 0 && x < c.width*dotsPerCellX && y > 0 && y < c.height*dotsPerCellY) {
+func (c *Canvas) DotWidth() int { return dotsPerCellX * c.width }
+
+func (c *Canvas) DotHeight() int { return dotsPerCellY * c.height }
+
+func (c *Canvas) SetDot(x, y int) bool {
+	if (x >= 0 && x < c.width*dotsPerCellX && y >= 0 && y < c.height*dotsPerCellY) {
 		*c.dotAt(x, y) = true
+		return true
+	}
+	return false
+}
+
+func (c *Canvas) SetDotWithColor(x, y int, col colorful.Color) {
+	if c.SetDot(x, y) {
+		// remember we can only colour full cells
+		cellX := x / dotsPerCellX
+		cellY := y / dotsPerCellY
+		c.colors[cellY*c.width+cellX] = col
 	}
 }
 
@@ -59,7 +80,15 @@ func (c *Canvas) Render() string {
 					}
 				}
 			}
-			output.WriteRune(rune(0x2800 + int(bits)))
+			if bits != 0 {
+				col := c.colors[cellY*c.width+cellX]
+				r, g, b := col.RGB255()
+				fmt.Fprintf(&output, "\033[38;2;%d;%d;%dm", r, g, b)
+				output.WriteRune(rune(0x2800 + int(bits)))
+				output.WriteString("\033[38;2;0m")
+			} else {
+				output.WriteRune(' ')
+			}
 		}
 		output.WriteString("\n")
 	}
