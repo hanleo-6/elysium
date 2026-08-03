@@ -27,7 +27,7 @@ type Canvas struct {
 	colors        []colorful.Color // current colour for each cell
 }
 
-func New(width, height int) *Canvas {
+func NewCanvas(width, height int) *Canvas {
 	return &Canvas{
 		width:  width,
 		height: height,
