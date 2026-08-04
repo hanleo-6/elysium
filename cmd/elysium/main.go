@@ -6,8 +6,10 @@ import(
 	"math/rand"
 	"os"
 
-	"github.com/hanleo-6/elysium/internal/render"
+	"github.com/hanleo-6/elysium/internal/sim"
 	"github.com/hanleo-6/elysium/internal/physics"
+	"github.com/hanleo-6/elysium/internal/render"
+
 	tea "charm.land/bubbletea/v2"
 )
 
@@ -21,18 +23,68 @@ func doTick() tea.Cmd {
 
 type model struct {
 	canvas *render.Canvas
-	skelly *physics.Skeleton
-	target physics.Vec2
-	timer  float64
+	slugs  []*sim.ElysiaChlorotica
+	algae  []*sim.Alga
 	width  int
 	height int
+	ready  bool // true if canvas is setup
+}
+
+type config struct {
+	numSlugs int
+	initialAlgae int
+}
+
+func getConfig() config {
+	return config{
+		numSlugs: 2.0,
+		initialAlgae: 20,
+	}
 }
 
 func initialModel() model {
-	return model {
-		skelly: physics.NewSpine(physics.Vec2{X: 10, Y: 10}, 10, 3.0),
-		target: physics.Vec2{X: 20, Y: 20},
-		timer: 3.0,
+	return model{
+		ready: false,
+	}
+}
+
+func (m *model) initSim() {
+	m.initSlugs()
+	m.initAlgae()
+}
+
+func (m *model) initSlugs() {
+	c := getConfig()
+	slugs := make([]*sim.ElysiaChlorotica, 0, c.numSlugs)
+	for i := 0; i < c.numSlugs; i++ {
+		x := int(rand.Float64() * float64(m.canvas.DotWidth()))
+		y := int(rand.Float64() * float64(m.canvas.DotHeight()))
+		newSlug := sim.NewECSlug(x, y, 2.0)
+		slugs = append(slugs, newSlug)
+	}
+	m.slugs = slugs
+}
+
+func (m *model) initAlgae() {
+	c := getConfig()
+	algae := make([]*sim.Alga, 0, c.initialAlgae)
+	for i := 0; i < c.initialAlgae; i++ {
+		x := int(rand.Float64() * float64(m.canvas.DotWidth()))
+		y := int(rand.Float64() * float64(m.canvas.DotHeight()))
+		newAlga := sim.NewAlga(x, y)
+		algae = append(algae, newAlga)
+	}
+	m.algae = algae
+}
+
+func (m *model) RegenerateAlgae() {
+	for _, alga := range m.algae {
+		if alga.Eaten {
+			x := int(rand.Float64() * float64(m.canvas.DotWidth()))
+			y := int(rand.Float64() * float64(m.canvas.DotHeight()))
+			alga.Pos = physics.Vec2{X: float64(x), Y: float64(y)}
+			alga.Eaten = false
+		}
 	}
 }
 
@@ -53,20 +105,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.canvas = render.NewCanvas(m.width, m.height)
 
+		if !m.ready {
+			m.initSim()
+			m.ready = true
+		}
+
 	case tickMsg:
 		// carry out a simulation tick
 		dt := 0.033
 
-		m.timer += dt
-		if m.timer > 6.0 {
-			m.timer = 0.0
-			m.target = physics.Vec2{
-				X: rand.Float64() * float64(m.canvas.DotWidth()),
-				Y: rand.Float64() * float64(m.canvas.DotHeight()),
-			}
+		for _, slug := range m.slugs {
+			slug.Tick(m.algae, dt)
 		}
-		accel := m.skelly.Seek(m.target, dt)
-		m.skelly.Step(dt, accel)
+
+		if len(m.algae) < 10 {
+			m.RegenerateAlgae()
+		}
 
 		return m, doTick()
 	}
@@ -79,8 +133,12 @@ func (m model) View() tea.View {
 	}
 	m.canvas.Clear()
 
-	m.canvas.DrawSpine(m.skelly, render.ColorAdult)
-	m.canvas.SetDotWithColor(int(m.target.X), int(m.target.Y), render.ColorLightBand)
+	for _, alga := range m.algae {
+		m.canvas.DrawAlga(alga)
+	}
+	for _, slug := range m.slugs {
+		m.canvas.DrawECSlug(slug)
+	}
 
 	return tea.NewView(m.canvas.Render())
 }

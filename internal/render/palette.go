@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -27,7 +28,8 @@ var (
 	ColorAdult    = mustHex("#2E8B57")
 
 	// Algae
-	ColorAlgae = mustHex("#AACC00")
+	ColorAlgaeLight = mustHex("#AACC00")
+	ColorAlgaeDark  = mustHex("#557A00")
 
 	// Portal
 	ColorPortal = mustHex("#aa3e98")
@@ -35,6 +37,10 @@ var (
 
 func SlugColor(fullness float64) colorful.Color {
 	return ColorJuvenile.BlendHcl(ColorAdult, fullness).Clamped()
+}
+
+func AlgaColor() colorful.Color {
+	return ColorAlgaeLight.BlendHcl(ColorAlgaeDark, rand.Float64()).Clamped()
 }
 
 func WaterColor(depth float64) colorful.Color {

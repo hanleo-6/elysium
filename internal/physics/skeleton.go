@@ -25,8 +25,8 @@ func NewSpine(root Vec2, count int, segmentLength float64) *Skeleton {
 		Points: p,
 		Constraints: c,
 		Damping: 0.98,
-		MaxSpeed: 30.0,
-		MaxForce: 300.0,
+		MaxSpeed: 42.0,
+		MaxForce: 380.0,
 	} // TODO: put these into config
 }
 
