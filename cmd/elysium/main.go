@@ -23,6 +23,7 @@ func doTick() tea.Cmd {
 
 type model struct {
 	canvas *render.Canvas
+	enviro *sim.Environment
 	slugs  []*sim.ElysiaChlorotica
 	algae  []*sim.Alga
 	width  int
@@ -38,7 +39,7 @@ type config struct {
 func getConfig() config {
 	return config{
 		numSlugs: 2.0,
-		initialAlgae: 20,
+		initialAlgae: 100,
 	}
 }
 
@@ -49,8 +50,13 @@ func initialModel() model {
 }
 
 func (m *model) initSim() {
+	m.initEnviro()
 	m.initSlugs()
 	m.initAlgae()
+}
+
+func (m *model) initEnviro() {
+	m.enviro = sim.NewEnvironment(m.canvas.DotWidth(), m.canvas.DotHeight(), 4)
 }
 
 func (m *model) initSlugs() {
@@ -114,13 +120,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// carry out a simulation tick
 		dt := 0.033
 
+		// tick slugs
 		for _, slug := range m.slugs {
 			slug.Tick(m.algae, dt)
 		}
+		// tick environment
+		m.enviro.Tick(dt, m.algae, m.slugs)
 
-		if len(m.algae) < 10 {
-			m.RegenerateAlgae()
-		}
+		m.RegenerateAlgae()
 
 		return m, doTick()
 	}

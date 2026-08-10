@@ -46,7 +46,7 @@ func (c *Canvas) DrawECSlug(slug *sim.ElysiaChlorotica) {
 	}
 
 	// draw rhinopores on head
-	head := slug.Skelly.Points[0].Pos
+	head := slug.Head().Pos
 	neck := slug.Skelly.Points[1].Pos
 
 	dir := head.Sub(neck)

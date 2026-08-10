@@ -38,6 +38,10 @@ func NewECSlug(initialX, initialY int, segmentLength float64) *ElysiaChlorotica 
 	}
 }
 
+func (s *ElysiaChlorotica) Head() *physics.Point {
+	return s.Skelly.Points[0]
+}
+
 func (s *ElysiaChlorotica) Tick(algae []*Alga, dt float64) {
 	if s.Fullness >= 1.0 {
 		// seek light zone + loaf
@@ -73,7 +77,7 @@ func (s *ElysiaChlorotica) acquireTarget(algae []*Alga) (*Alga, float64) {
 		if alga.Eaten {
 			continue
 		}
-		offset := alga.Pos.Sub(s.Skelly.Points[0].Pos)
+		offset := alga.Pos.Sub(s.Head().Pos)
 		dist := math.Sqrt(offset.X*offset.X + offset.Y*offset.Y)
 		if dist < minDist {
 			closest = alga
