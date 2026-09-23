@@ -28,7 +28,15 @@ func (c *Canvas) DrawCircle(centerX, centerY int, r int, col colorful.Color) {
 	}
 }
 
-func (c* Canvas) DrawLine(x0, y0, x1, y1 int, col colorful.Color) {
+// DrawCircleFill draws a circle as in DrawCircle but filling with colour
+// Adapted from https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+func (c *Canvas) DrawCircleFill(centerX, centerY int, r int, col colorful.Color) {
+	for i := 0; i <= r; i++ {
+		c.DrawCircle(centerX, centerY, i, col);
+	}
+}
+
+func (c* Canvas) DrawLine(x0, y0, x1, y1 int, col colorful.Color, setPointFn ...SetColourFunction) {
 	// Single quadrant:
 	// dx := x1-x0
 	// dy := y1-y0
@@ -46,6 +54,12 @@ func (c* Canvas) DrawLine(x0, y0, x1, y1 int, col colorful.Color) {
 	// 	}
 	// }
 
+	// Use default function is param was ommitted, otherwise use param
+	fn := c.SetDotWithColor
+	if len(setPointFn) > 0 && setPointFn[0] != nil {
+		fn = setPointFn[0]
+	}
+
 	dx := abs(x1 - x0)
 	dy := abs(y1 - y0)
 	// set step direction for x and y
@@ -60,7 +74,7 @@ func (c* Canvas) DrawLine(x0, y0, x1, y1 int, col colorful.Color) {
 	err := dx - dy
 
 	for {
-		c.SetDotWithColor(x0, y0, col)
+		fn(x0, y0, col)
 		if (x0 == x1 && y0 == y1) {
 			break
 		}

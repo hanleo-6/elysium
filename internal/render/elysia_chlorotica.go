@@ -9,7 +9,7 @@ func (c *Canvas) DrawECSlug(slug *sim.ElysiaChlorotica) {
 	color := SlugColor(slug.Fullness)
 	// draw rough body shape
 	for i, point := range slug.Skelly.Points {
-		c.DrawCircle(int(point.Pos.X), int(point.Pos.Y), slug.BodyProfile[i], color)
+		c.DrawCircleFill(int(point.Pos.X), int(point.Pos.Y), slug.BodyProfile[i], color)
 	}
 	// draw leaf wings
 	leftWingPoints := make([]physics.Vec2, 0, 4)

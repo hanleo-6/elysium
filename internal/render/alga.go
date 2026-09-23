@@ -9,5 +9,5 @@ func (c *Canvas) DrawAlga(alga *sim.Alga) {
 		return
 	}
 	color := AlgaColor()
-	c.DrawCircle(int(alga.Pos.X), int(alga.Pos.Y), int(alga.Radius), color)
+	c.DrawCircleFill(int(alga.Pos.X), int(alga.Pos.Y), int(alga.Radius), color)
 }

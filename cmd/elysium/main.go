@@ -24,6 +24,7 @@ func doTick() tea.Cmd {
 type model struct {
 	canvas *render.Canvas
 	enviro *sim.Environment
+	sm     *sim.Saltmarsh
 	slugs  []*sim.ElysiaChlorotica
 	algae  []*sim.Alga
 	width  int
@@ -53,10 +54,15 @@ func (m *model) initSim() {
 	m.initEnviro()
 	m.initSlugs()
 	m.initAlgae()
+	m.initSM()
 }
 
 func (m *model) initEnviro() {
 	m.enviro = sim.NewEnvironment(m.canvas.DotWidth(), m.canvas.DotHeight(), 4)
+}
+
+func (m *model) initSM() {
+	m.sm = sim.NewSaltmarsh()
 }
 
 func (m *model) initSlugs() {
@@ -146,6 +152,8 @@ func (m model) View() tea.View {
 	for _, slug := range m.slugs {
 		m.canvas.DrawECSlug(slug)
 	}
+
+	m.canvas.DrawLightband(m.sm)
 
 	return tea.NewView(m.canvas.Render())
 }

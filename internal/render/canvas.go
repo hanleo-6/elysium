@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"strings"
 	"log"
+	"math"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -47,13 +48,19 @@ func (c *Canvas) dotAt(x, y int) *bool {
 	return &c.dots[y*c.width*dotsPerCellX + x]
 }
 
+func (c *Canvas) inBounds(x, y int) bool {
+	return (x >= 0 && x < c.width*dotsPerCellX && y >= 0 && y < c.height*dotsPerCellY)
+}
+
 func (c *Canvas) SetDot(x, y int) bool {
-	if (x >= 0 && x < c.width*dotsPerCellX && y >= 0 && y < c.height*dotsPerCellY) {
+	if c.inBounds(x, y) {
 		*c.dotAt(x, y) = true
 		return true
 	}
 	return false
 }
+
+type SetColourFunction func(x, y int, col colorful.Color)
 
 func (c *Canvas) SetDotWithColor(x, y int, col colorful.Color) {
 	if c.SetDot(x, y) {
@@ -64,20 +71,43 @@ func (c *Canvas) SetDotWithColor(x, y int, col colorful.Color) {
 	}
 }
 
+func (c *Canvas) SetBackground(x, y int, col colorful.Color) {
+	if c.inBounds(x, y) {
+		cellX := x / dotsPerCellX
+		cellY := y / dotsPerCellY
+		c.background[cellY*c.width+cellX] = col
+	}
+}
+
 func (c *Canvas) FillBackground() {
 	for y := 0; y < c.height; y++ {
 		yRatio := float64(y) / float64(c.height)
 		col := WaterColor(yRatio)
 		log.Printf("yRatio: %f", yRatio)
 		for x := 0; x < c.width; x++ {
-			c.background[y*c.width+x] = col
+			c.SetBackground(x, y, col)
 		}
+	}
+}
+
+func (c *Canvas) DrawCone(
+	originX, originY int,
+	initialTheta float64,
+	rotationTheta float64,
+	col colorful.Color,
+) {
+	stepTheta := 1.0 / float64(c.DotWidth())
+	for dTheta := 0.0; dTheta <= rotationTheta; dTheta += stepTheta {
+		theta := initialTheta + dTheta
+		endX := originX + int(float64(c.DotWidth()) * math.Cos(theta))
+		endY := originY + int(float64(c.DotWidth()) * math.Sin(theta))
+		c.DrawLine(originX, originY, endX, endY, col, c.SetBackground)
 	}
 }
 
 func (c *Canvas) Clear() {
 	clear(c.dots)
-	c.FillBackground()
+	// c.FillBackground()
 }
 
 func (c *Canvas) Render() string {
@@ -106,9 +136,11 @@ func (c *Canvas) Render() string {
 				rn = ' '
 			}
 			// background
-			// col := c.background[cellY*c.width+cellX]
-			// r, g, b := col.RGB255()
-			// fmt.Fprintf(&output, "\033[48;2;%d;%d;%dm", r, g, b)
+			col := c.background[cellY*c.width+cellX]
+			r, g, b := col.RGB255()
+			if !(r == 0 && g == 0 && b == 0) {
+				fmt.Fprintf(&output, "\033[48;2;%d;%d;%dm", r, g, b)
+			}
 			// write
 			output.WriteRune(rn)
 			output.WriteString("\033[38;2;0m") // Clear colour
