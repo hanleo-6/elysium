@@ -1,6 +1,8 @@
 package render
 
 import (
+	"math"
+
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -35,6 +37,22 @@ func (c *Canvas) DrawCircleFill(centerX, centerY int, r int, col colorful.Color)
 		c.DrawCircle(centerX, centerY, i, col);
 	}
 }
+
+func (c *Canvas) DrawCone(
+	originX, originY int,
+	initialTheta float64,
+	rotationTheta float64,
+	col colorful.Color,
+) {
+	stepTheta := 1.0 / float64(c.DotWidth())
+	for dTheta := 0.0; dTheta <= rotationTheta; dTheta += stepTheta {
+		theta := initialTheta + dTheta
+		endX := originX + int(float64(c.DotWidth()) * math.Cos(theta))
+		endY := originY + int(float64(c.DotWidth()) * math.Sin(theta))
+		c.DrawLine(originX, originY, endX, endY, col, c.SetBackground)
+	}
+}
+
 
 func (c* Canvas) DrawLine(x0, y0, x1, y1 int, col colorful.Color, setPointFn ...SetColourFunction) {
 	// Single quadrant:
