@@ -2,3 +2,4 @@
 *.test
 DEVPLAN.md
 /cmd/elysium/debug.log
+*debug
