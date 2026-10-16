@@ -43,15 +43,16 @@ func (s *ElysiaChlorotica) Head() *physics.Point {
 }
 
 func (s *ElysiaChlorotica) Tick(algae []*Alga, dt float64) {
-	if s.Fullness >= 1.0 {
-		// seek light zone + loaf
-	} else {
-		s.SeekFood(algae, dt)
-	}
+	// if s.Fullness >= 1.0 {
+	// 	// seek light zone + loaf
+	// } else {
+	// 	s.SeekFood(algae, dt)
+	// }
+	s.SeekFood(algae, dt)
 }
 
 func (s *ElysiaChlorotica) WingsOpenFactor() float64 {
-	if s.Fullness < 0.5 {
+	if s.Fullness < 1 {
 		return 0.0
 	}
 	return s.Fullness

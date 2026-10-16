@@ -1,6 +1,7 @@
 package sim
 
 import (
+	"math"
 	"math/rand/v2"
 )
 
@@ -9,39 +10,42 @@ type Saltmarsh struct {
 	LightOriginY int
 	InitTheta    float64
 	SpreadTheta  float64
-	expandVel    float64
-	moveVel      float64
+
+	centreTheta  float64
+	baseSpread   float64
+	phases       [3]float64
+	drift        float64
 }
 
-const expandScalar float64 = 1.5;
-const moveScalar float64 = 0.1;
-
-func getRandScalar(scalar float64) float64 {
-	return rand.Float64() * scalar
-}
-
-func getRandomVel() float64 {
-	// sign := rand.Float64 > 0.5 ? 1 : -1
-	// return sign * rand.Float64()
-	return 1.0
-}
+const pull = 0.15
+const noise = 0.8
 
 func NewSaltmarsh() *Saltmarsh {
-	return &Saltmarsh{
-		LightOriginX: 0,
-		LightOriginY: 0,
-		InitTheta:    45.0,
-		SpreadTheta:  20.0,
-		expandVel:    getRandomVel(),
-		moveVel:      getRandomVel(),
+	s := &Saltmarsh{centreTheta: 47.5, baseSpread: 24.0}
+	for i := range s.phases {
+		s.phases[i] = rand.Float64() * 2 * math.Pi
 	}
+	s.MoveLightband(0, 0)
+	return s
 }
 
-func (s *Saltmarsh) MoveLightband() {
-	s.expandVel = getRandomVel() * getRandScalar(expandScalar)
-	s.moveVel = getRandomVel() * getRandScalar(moveScalar)
+func (s *Saltmarsh) MoveLightband(t, dt float64) {
+	sway := 3.6 * math.Sin(0.31 * t + s.phases[0]) +
+			1.5 * math.Sin(0.83 * t + s.phases[1]) +
+			0.4 * math.Sin(2.17 * t + s.phases[2])
 
-	s.InitTheta += s.moveVel
-	s.SpreadTheta += s.expandVel
+	// Pull back the light toward centre
+	// 'Ornstein Uhlenbeck'
+	// 'Euler-Maruyama' method
+	// fancier the name, the better
+	s.drift += -pull * s.drift * dt + noise * math.Sqrt(dt) * rand.NormFloat64()
+
+	// Modulate width by a factor to spread and shrink it
+	s.SpreadTheta = s.baseSpread * (1 + 0.25 * math.Sin(0.48 * t + s.phases[1]))
+
+	// Sway centre
+	centre := s.centreTheta + sway + s.drift
+	// Derive InitTheta from centre
+	s.InitTheta = centre - s.SpreadTheta / 2
 }
 

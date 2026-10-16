@@ -64,7 +64,7 @@ func (e *Environment) Tick(dt float64, algae []*Alga, slugs []*ElysiaChlorotica)
 		vel := pos.Sub(slug.Head().PrevPos)
 		e.grid.injectForce(pos, vel)
 	}
-	e.Saltmarsh.MoveLightband()
+	e.Saltmarsh.MoveLightband(e.Time, dt)
 	e.Time += dt
  }
 

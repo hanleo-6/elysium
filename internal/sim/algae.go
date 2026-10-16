@@ -25,6 +25,6 @@ func (a *Alga) Eat() {
 }
 
 func (a *Alga) NomFactor() float64 {
-	return a.Radius * 0.1
+	return a.Radius * 0.01
 }
 

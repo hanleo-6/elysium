@@ -3,7 +3,6 @@ package render
 import(
 	"fmt"
 	"strings"
-	"log"
 
 	"github.com/lucasb-eyer/go-colorful"
 )
@@ -79,11 +78,10 @@ func (c *Canvas) SetBackground(x, y int, col colorful.Color) {
 }
 
 func (c *Canvas) FillBackground() {
-	for y := 0; y < c.height; y++ {
+	for y := 0; y < c.DotHeight(); y++ {
 		yRatio := float64(y) / float64(c.height)
 		col := WaterColor(yRatio)
-		log.Printf("yRatio: %f", yRatio)
-		for x := 0; x < c.width; x++ {
+		for x := 0; x < c.DotWidth(); x++ {
 			c.SetBackground(x, y, col)
 		}
 	}
@@ -91,7 +89,7 @@ func (c *Canvas) FillBackground() {
 
 func (c *Canvas) Clear() {
 	clear(c.dots)
-	// c.FillBackground()
+	c.FillBackground()
 }
 
 func (c *Canvas) Render() string {
