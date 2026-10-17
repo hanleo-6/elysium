@@ -1,26 +1,28 @@
-  # Elysium
+  ## Elysium
 
-  > A terminal-rendered saltmarsh ecosystem written in Go starring the leaf
-  sea slug *Elysia chlorotica*.
+  > A terminal-rendered leaf sea slug ecosystem written in Go.
 
--> to insert demo video here
 
-  ---
 
-  ## Concept
+https://github.com/user-attachments/assets/46d9f516-5c88-4ee1-bd14-f2093f164092
+
+
+
+
+  ### Concept
 
   One of my favourite seaslugs is *Elysia chlorotica*.
   
-  *Elysium* is a simulation centred on their biology.
+  **Elysium** is a simulation centred on their biology.
   
   With some artistic licence, this is the story of the simulation:
 
-  As juveniles, the seaslugs greedily seek, attack* and nom algae. As you might
-  know, algae contain chloroplasts. Much like the first multi-cellular
-  organism, the seaslugs decide to not digest these, instead storing them
-  within its digestive system.
+  As juveniles, the seaslugs greedily seek, attack* and nom algae. You might
+  know that algae contain chloroplasts. Much like the first multi-cellular
+  organism, these seaslugs decide to not digest these, instead they store them
+  within their digestive system.
 
-  After feeding on enough algae, the seaslugs undergo metamorphosis, gradually
+  After feeding on enough algae, the seaslugs undergo **metamorphosis**, gradually
   becoming green in the process.
   They can now harness the power of photosynthesis through the chloroplasts
   they have incorporated into their own cells!
@@ -30,18 +32,22 @@
   Since their hustle and bustle of their young days is now over, its time for
   the adult seaslugs to reep the rewards of their hard work, as many of us
   dream of.
-  They do this by loafing.
+  They do this by **loafing**.
 
   In the process of loafing, they will seek out the underwater shafts of
   light, then proceed to loaf in them.
 
-  When they've enjoyed their time enough, they will call down a wormhole
+  When they've enjoyed their time enough, they will call down a **wormhole**
   to go through and be reborn as a juvenile, repeating their life cycle
   until you, as 'the person upstairs' presses Ctrl-C in the terminal.
 
-  ---
+  
 
-  ## Features
+  *seaslugs puncture the 'algal cell wall with its radula'. how violent!
+
+---
+
+  ### Features
 
   - **Procedural animation::** Seaslugs are modelled with a chain of point
   masses with distance constraints between them. The head seek-steers
@@ -56,27 +62,25 @@
   - **Underwater lighting:** A dynamic underwater light cone sways mimicking sunlight refraction. The maths is
   3 sin waves of different phases with 'Ornstein–Uhlenbeck' centre correction to pull it back,
 
-  ---
+---
 
-  ## Running
-
-  ### Requirements
+  ### Running
+  #### Requirements
   - Go 1.26+ (or compatible modern Go toolchain)
   - A terminal emulator supporting **24-bit TrueColor** (I currently use
   Alacritty, but Kitty, iTerm2, WezTerm, etc. should work too)
   and UTF-8 Braille characters.
 
-  ### Run Directly
+  #### Run
   ```sh
   go run ./cmd/elysium
   ```
 
   Quit: `q` or `Ctrl+C`
+  
+---
 
-  ---
-
-
-  ## Architecture
+  ### Architecture
 
   ```
   elysium/
@@ -88,15 +92,27 @@
       └── render/                  # rendering logic for each component of the scene
   ```
 
-  ## Dependencies
+---
+
+  ### Dependencies
 
   - **Terminal TUI** | [`charm.land/bubbletea/v2`](https://github.com/charmbracelet/bubbletea)
   - **Color Spaces** | [`github.com/lucasb-eyer/go-colorful`](https://github.com/lucasb-eyer/go-colorful)
 
- ## Inspirations
+ ### Inspirations
 
   - **Rainworld** | [`rainworldgame.com/`](https://rainworldgame.com/)
   - **cbonsai** | [`github.com/jakobrees/cbonsai`](https://github.com/jakobrees/cbonsai)
   - **asciiquarium** | [`github.com/antoineFrau/asciiquarium/tree/main`](https://github.com/antoineFrau/asciiquarium/tree/main)
   - **drawille** | [`github.com/asciimoo/drawille/tree/master`](https://github.com/asciimoo/drawille/tree/master)
 
+---
+
+ ### Current next steps!
+
+  - ~~write list of next steps~~
+  - rewrite lighting to tint foreground colours
+  - improve parapodia rendering and animation
+  - write full lifecycle logic for seaslugs 
+  - implement wormholes
+  - allow loafing
