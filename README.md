@@ -9,9 +9,10 @@
 
   ## Concept
 
-  *Elysium* is a simulation centred on the biology of ***Elysia chlorotica***, one of
-  my favourite seaslugs.
-
+  One of my favourite seaslugs is *Elysia chlorotica*.
+  
+  *Elysium* is a simulation centred on their biology.
+  
   With some artistic licence, this is the story of the simulation:
 
   As juveniles, the seaslugs greedily seek, attack* and nom algae. As you might
@@ -89,15 +90,13 @@
 
   ## Dependencies
 
-  **Terminal TUI** | [`charm.land/bubbletea/v2`](https://github.
-com/charmbracelet/bubbletea)
-  **Color Spaces** | [`github.com/lucasb-eyer/go-colorful`](https://github.
-com/lucasb-eyer/go-colorful)
+  - **Terminal TUI** | [`charm.land/bubbletea/v2`](https://github.com/charmbracelet/bubbletea)
+  - **Color Spaces** | [`github.com/lucasb-eyer/go-colorful`](https://github.com/lucasb-eyer/go-colorful)
 
  ## Inspirations
 
-  **Rainworld** | [`rainworldgame.com/`](https://rainworldgame.com/)
-  **cbonsai** | [`github.com/jakobrees/cbonsai`](https://github.com/jakobrees/cbonsai)
-  **asciiquarium** | [`github.com/antoineFrau/asciiquarium/tree/main`](https://github.com/antoineFrau/asciiquarium/tree/main)
-  **drawille** | [`github.com/asciimoo/drawille/tree/master`](https://github.com/asciimoo/drawille/tree/master)
+  - **Rainworld** | [`rainworldgame.com/`](https://rainworldgame.com/)
+  - **cbonsai** | [`github.com/jakobrees/cbonsai`](https://github.com/jakobrees/cbonsai)
+  - **asciiquarium** | [`github.com/antoineFrau/asciiquarium/tree/main`](https://github.com/antoineFrau/asciiquarium/tree/main)
+  - **drawille** | [`github.com/asciimoo/drawille/tree/master`](https://github.com/asciimoo/drawille/tree/master)
 
