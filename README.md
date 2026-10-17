@@ -48,13 +48,12 @@
   dynamically using the point mass locations, resulting in a look inspired by
   'Rainworld'.
   - **Unicode Braille dot canvas:** Rendered in the terminal using 2×4 Braille
-  cell dot matrices with true 24-bit ANSI color and cell background shading.
-  - **Aquatic Hydrodynamic Fluid Dynamic Provider Factory:** Algae flow with an ambient vector field
-  driven by curl noise, combined with the wake from each seaslug that
-  pushes the algae particles aside like a boat wake.
-  - **Underwater lighting:** A dynamic underwater light cone sways, driven by
+  cell dot matrices with true 24-bit ANSI color and cell background shading. Note: a limitation of using Braille dots is that
+  each set of dots in a cell must be the same colour.
+  - **Aquatic Hydrodynamic Fluid Dynamic Provider Abstract Physics Factory:** Algae flow with a vector field
+  driven by curl noise, and are pushed aside by each seaslug's wake (like a boat wake).
+  - **Underwater lighting:** A dynamic underwater light cone sways mimicking sunlight refraction. The maths is
   3 sin waves of different phases with 'Ornstein–Uhlenbeck' centre correction to pull it back,
-mimicking sunlight refraction.
 
   ---
 
@@ -71,8 +70,7 @@ mimicking sunlight refraction.
   go run ./cmd/elysium
   ```
 
-  ### Controls
-  - `q` or `Ctrl+C` — Quit simulation
+  Quit: `q` or `Ctrl+C`
 
   ---
 
@@ -82,20 +80,14 @@ mimicking sunlight refraction.
   ```
   elysium/
   ├── cmd/
-  │   └── elysium/main.go          # Bubble Tea runtime, model loop,
-update/view wiring
+  │   └── elysium/main.go          # bubbletea runtime, simulation loop
   └── internal/
-      ├── physics/                 # Physics primitives and Skeleton for seaslug
-      ├── sim/                     # Ecosystem logic: slugs, algae, curl flow &
-wake grid, saltmarsh light
-      └── render/                  # Rendering logic for each component of the
-      scene
+      ├── physics/                 # physics primitives and point mass structs
+      ├── sim/                     # ecosystem logic: slugs, algae, curl flow & wake grid, saltmarsh lighting
+      └── render/                  # rendering logic for each component of the scene
   ```
 
-Internal dependency flow: `cmd → render → sim → physics`.
-
-
-  ## External dependencies
+  ## Dependencies
 
   **Terminal TUI** | [`charm.land/bubbletea/v2`](https://github.
 com/charmbracelet/bubbletea)
