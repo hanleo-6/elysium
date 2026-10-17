@@ -1,29 +1,13 @@
 Elysium project design
 
-## Working agreement for this project - read this first
+> **Agents:** this is a design reference, not your instructions. The
+> working agreement (hand-coded only, discussion-only agents, which
+> docs you may edit) lives in `AGENTS.md` - follow that first.
 
-- This project is hand-coded only. All code is written by the user,
-  by hand.
-- Any coding agent are used for **discussion only**:
-  talking through approaches, explaining concepts, sketching
-  pseudocode or type shapes on request, reviewing code the user
-  wrote and pastes in. It is not for writing, generating, editing, or
-  refactoring code automatically, and not for creating or editing
-  project files directly.
-- If asked something like "implement X" or "add Y", the right
-  response is to talk through how to approach it (and sketch
-  pseudocode inline in the chat if that helps), not to produce a
-  diff, create a file, or edit one.
-- This holds for the whole project, not just the first session.
-- Exception: DEVPLAN.md and this file (CONTEXT.md) are process/
-  planning documents, not simulation code, and the agent may create
-  and edit them directly on request (e.g. to track checkpoint status
-  or log a design decision from discussion). This does not extend to
-  anything under `internal/`, `cmd/`, or any `.go` file - those
-  remain hand-coded only.
-- The user is new to Go but not to programming. Be ready to explain syntax or
-  go-specific details, but assume there is no need to explain general
-  programming concepts
+This file is the design document: concept, biology grounding,
+mechanics, aesthetic direction, and the current file architecture.
+It's written mainly as context for coding agents, but stays readable
+for humans.
 
 See DEVPLAN.md for the actively-tracked implementation checkpoint
 list and status - that file is the source of truth for build order
@@ -100,11 +84,11 @@ a juvenile materializes there with freshly randomized traits.
 - Crossing the fullness threshold locks in size, shifts color fully
   to green, unfurls the parapodia, and flips behavior from
   food-seeking to light-band-seeking.
-- The "light band" is a horizontal zone, visually obvious,
-  whose vertical center drifts over time (sine plus
-  noise) standing in for changing light conditions.
-- Adults loaf toward the band lazily, in contrast to a
-  juvenile's hustle steering
+- Adults seek toward the band, then loaf about in the zone lazily
+  , in contrast to a juvenile's hustle steering.
+- Light band implemented as an angled cone from a surface origin. Its
+  angle sways via a sum of different phase sines plus mean-reverting
+  (Ornstein–Uhlenbeck) drift, and its width breathes.
 
 ## Visual / aesthetic direction
 
@@ -136,51 +120,94 @@ Reference 2: Rain World
 - **Color**: interpolated between juvenile brown/red and adult green
   as a function of fullness, in perceptual color space.
 
-## Architecture (working draft)
+## Architecture (may be outdated)
+
+Module: `github.com/hanleo-6/elysium` (Go 1.26). Dependency direction is
+`cmd → render → sim → physics`; `physics` imports nothing internal.
 
 ```
 elysium/
-  go.mod
-  cmd/elysium/main.go       - bubbletea program setup, tick loop, resize wiring
+  go.mod / go.sum
+  .gitignore                    - ignores /elysium binary, debug.log, DEVPLAN.md
+  CONTEXT.md                    - design (this file)
+  DEVPLAN.md                    - checkpoint list + status (gitignored)
 
-  internal/sim/
-    saltmarsh.go                 - World{Slugs, Food, t}; World.Tick(dt)
-    seaslug.go                  - Slug: stage, traits, spine, parapodia, fullness, portal timer
-    algae.go                  - FoodParticle: pos, size
-    environment.go           - LightBand(t), FlowAt(pos, t) via noise
-    seek.go               - juvenile -> food, adult -> light band
+  cmd/elysium/
+    main.go                     - bubbletea v2 model: owns canvas, Environment,
+                                  []*ElysiaChlorotica, []*Alga. Init/config
+                                  (numSlugs, initialAlgae), fixed-dt tick
+                                  (33ms / dt=0.033), resize → new Canvas,
+                                  RegenerateAlgae (respawns eaten algae at random
+                                  positions), View() draw order:
+                                  Clear → algae → slugs → light band → Render.
+                                  Logs to debug.log via tea.LogToFile.
 
   internal/physics/
-    physics.go                - Verlet + constraint relaxation for spine chains
+    physics.go                  - Vec2 (Add/Sub/Scale/Length), Point{Pos, PrevPos},
+                                  Constraint{P1, P2, RestLength}
+    skeleton.go                 - Skeleton: NewSpine (straight point chain),
+                                  Step (Verlet on head with accel, free Verlet on
+                                  body, 5 constraint-relaxation iterations),
+                                  Seek (Reynolds seek steering, force-clamped)
+
+  internal/sim/
+    environment.go              - Environment{grid, Saltmarsh, Time}: analytic
+                                  sine "potential" → curl-noise flow (sampleCurl),
+                                  flowAt = curl + wake; Tick advances wake decay,
+                                  drifts algae, injects slug head velocity into
+                                  wake grid, moves light band, advances Time
+    wakegrid.go                 - wakeGrid: coarse vector grid of slug wakes
+                                  (injectForce, bilinear sampleWake, decay tick)
+    saltmarsh.go                - Saltmarsh: light band state (origin, InitTheta,
+                                  SpreadTheta); MoveLightband(t, dt) = sum of 3
+                                  sines + Ornstein–Uhlenbeck drift on the centre
+                                  angle, sine-modulated spread
+    seaslug.go                  - ElysiaChlorotica{Skelly, Fullness, BodyProfile,
+                                  Stage}: Tick → SeekFood (nearest uneaten alga,
+                                  eat within nomRange, Fullness += NomFactor),
+                                  WingsOpenFactor. Stage enum exists, not yet
+                                  driven.
+    algae.go                    - Alga{Pos, Radius, Eaten}; NomFactor from radius
 
   internal/render/
-    canvas.go                - custom Braille dot-grid + cell colouring
-    palette.go               - colour definitions
-    frame.go                  - draws each frame: background → band → food → creatures
-    portal.go                 - spiral portal
-    elysia_chlorotica.go      - elysia_chlorotica procedural rendering
-    sprites.go                - sprites for static elements (algae, extra environment objects?)
-    shapes.go                 - primitive shapes
-
+    canvas.go                   - Braille canvas: 2×4 dots per cell, one fg + one
+                                  bg colour per cell; SetDot/SetDotWithColor/
+                                  SetBackground, FillBackground (water gradient,
+                                  currently unused), Clear, Render (24-bit ANSI)
+    palette.go                  - palette constants + SlugColor(fullness),
+                                  AlgaColor(), WaterColor(depth) via go-colorful
+    shapes.go                   - DrawCircle / DrawCircleFill (midpoint circle),
+                                  DrawCone (fan of lines, writes background),
+                                  DrawLine (Bresenham, pluggable set-point fn)
+    lightband.go                - DrawLightband: degrees → radians, DrawCone
+    alga.go                     - DrawAlga: filled circle
+    elysia_chlorotica.go        - DrawECSlug: body circles from BodyProfile,
+                                  parapodia lines offset along spine normals,
+                                  rhinopores at head
+    spine.go                    - DrawSpine: debug view of skeleton constraints
+    sprites.go                  - AlgaeSprite (unused)
+    frame.go                    - stub (intended home for main.go's draw loop)
+    wormhole.go                 - stub (intended portal effect)
 ```
 
-Libraries under consideration:
+Planned, not yet created (from the original draft):
 
-- `charmbracelet/bubbletea` - terminal setup/teardown, resize
-  handling, tick loop.
-- `charmbracelet/harmonica` - spring-based animation for the
-  parapodia angle and adult drift toward the light band (not for the
-  spine chain
-- `lucasb-eyer/go-colorful` - perceptual-space color interpolation,
-- `ojrac/opensimplex-go` - noise for the food/current flow field.
+- `internal/sim/seek.go` - adult → light-band seeking (juvenile → food
+
+Libraries:
+
+- In use: `charm.land/bubbletea/v2` (terminal, resize, tick loop),
+  `lucasb-eyer/go-colorful` (Lab/HCL colour blending).
+- Still under consideration: `charmbracelet/harmonica` (spring for
+  parapodia angle / adult drift).
+- Dropped for now: `ojrac/opensimplex-go` - flow field uses an analytic
+  sum-of-sines potential with curl instead.
 
 ## Out of scope for now
 
 The "inputs" side of the project:
 
-- Terminal focus events (bubbletea's `WithReportFocus` /
-  `FocusMsg` / `BlurMsg`) as a Forest-app-style focus-timer signal
-- Piping stdin through the tool as a progress-bar replacement for
+- Piping stdin into it as a progress-bar replacement for
   long-running commands.
 - System stats (CPU/mem/network) driving tank conditions as an
   ambient dashboard.
